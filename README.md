@@ -60,6 +60,17 @@ firebase deploy --only firestore:rules
 
 Or paste `firestore.rules` into **Firestore → Rules** in the console.
 
+### Deploying (Vercel / Netlify)
+
+Build-time variables must be added in the hosting dashboard — `.env` is
+gitignored, so a deployment without them shows a “Firebase configuration
+missing” screen instead of crashing with `auth/invalid-api-key`.
+
+Vercel: **Settings → Environment Variables** → add every `VITE_*` variable
+above → **Deployments → Redeploy** (env changes only apply to new builds).
+Also add the deployed domain to **Firebase → Authentication → Settings →
+Authorized domains**, otherwise admin sign-in is rejected.
+
 ## Admin routes
 
 - Login: `/chutya/nikal/dmart`
