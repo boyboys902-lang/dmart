@@ -277,7 +277,9 @@ const CheckoutPage = () => {
         upiId: upiSettings.upiId,
         payeeName: upiSettings.payeeName,
         amount: toPay,
-        note: `${product.title} - ${billing.fullName}`,
+        // UPI `tn` is capped at 50 chars — keep it short so every app accepts it.
+        note: `Order ${newOrder.id}`,
+        transactionRef: newOrder.id,
       });
 
       setPaymentLink({ url, appName: selectedApp.name });
