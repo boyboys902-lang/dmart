@@ -57,9 +57,9 @@ const StoreSettings = () => {
             <span>Store Settings</span>
           </h1>
           <p className="text-sm text-gray-500 mb-6">
-            Admin panel ka access code ab Firestore (
-            <span className="font-mono text-xs">dmart_settings/admin</span>) mein save
-            hota hai — yahan se kabhi bhi badal sakte hain.
+            The admin access code is stored in Firestore (
+            <span className="font-mono text-xs">dmart_settings/admin</span>) and can be
+            changed here at any time.
           </p>
 
           {error && (
@@ -90,8 +90,8 @@ const StoreSettings = () => {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-600 focus:border-teal-600"
                 />
                 <p className="text-xs text-gray-400 mt-1">
-                  Login page (<span className="font-mono">/chutya/nikal/dmart</span>) par
-                  yahi code poocha jata hai. Khali chhodne par code nahi poocha jayega.
+                  This is the code asked on the login page (<span className="font-mono">/chutya/nikal/dmart</span>).
+                  Leave it empty to disable the code prompt.
                 </p>
               </div>
 
@@ -109,9 +109,9 @@ const StoreSettings = () => {
           <div className="mt-8 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2">
             <AlertTriangle size={14} className="mt-0.5 shrink-0" />
             <p>
-              Firestore rules ab public hain (aapke kehne par) — koi bhi banda
-              products/orders/customers badal sakta hai. Jab chaho, rules wapas
-              login-only kar sakte hain.
+              Firestore rules are currently public (as requested) — anyone with the
+              project ID can change products/orders/customers. Switch the rules back
+              to login-only whenever you want.
             </p>
           </div>
         </div>

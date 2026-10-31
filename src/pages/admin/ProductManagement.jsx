@@ -250,7 +250,7 @@ const ProductManagement = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Products added here shop par turant dikhte hain. Inactive products storefront se hide ho jaate hain.
+            Products added here appear in the shop immediately. Inactive products are hidden from the storefront.
           </p>
 
           {error && (

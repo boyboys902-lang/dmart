@@ -68,9 +68,8 @@ const Customers = () => {
           </div>
 
           <p className="text-sm text-gray-500 mb-6">
-            Har checkout par customer ka naam, mobile aur address Firestore
-            (collection <span className="font-mono text-xs">dmart_customers</span>) mein
-            save hota hai.
+            Every checkout saves the customer&apos;s name, mobile and address to Firestore
+            (collection <span className="font-mono text-xs">dmart_customers</span>).
           </p>
 
           {error && (
@@ -103,12 +102,12 @@ const Customers = () => {
               <Users size={32} className="text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-500 font-semibold">
                 {customers.length === 0
-                  ? "Abhi koi customer save nahi hua"
-                  : "Koi customer search se match nahi hua"}
+                  ? "No customers saved yet"
+                  : "No customer matches your search"}
               </p>
               {customers.length === 0 && (
                 <p className="text-xs text-gray-400 mt-1">
-                  Jaise hi koi order place karega, uska address yahan aa jayega.
+                  As soon as someone places an order, their address will appear here.
                 </p>
               )}
             </div>

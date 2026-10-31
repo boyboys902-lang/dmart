@@ -514,8 +514,8 @@ const CheckoutPage = () => {
                           <QrCode size={20} />
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-bold text-gray-800">QR se pay karein</p>
-                          <p className="text-[10px] text-gray-400">Koi bhi UPI app se scan karein — tap to open QR</p>
+                          <p className="text-sm font-bold text-gray-800">Scan QR to pay</p>
+                          <p className="text-[10px] text-gray-400">Tap to open the QR — scan with any UPI app</p>
                         </div>
                         <ChevronRight size={16} className="text-gray-400 shrink-0" />
                       </button>
@@ -649,7 +649,7 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex items-center gap-1">{selectedApp.name} <ChevronRight size={16} /></div>
               </button>
-              <p className="text-[10px] text-gray-400 text-center mt-1.5">🔒 UPI only • App se pay • ya QR scan</p>
+              <p className="text-[10px] text-gray-400 text-center mt-1.5">🔒 UPI only • Pay in app or scan QR</p>
             </>
           )}
         </div>
@@ -668,7 +668,7 @@ const CheckoutPage = () => {
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2 text-[#0c831f]">
                 <QrCode size={18} />
-                <p className="text-sm font-bold text-gray-900">QR scan karke pay karein</p>
+                <p className="text-sm font-bold text-gray-900">Scan QR to pay</p>
               </div>
               <button
                 type="button"
@@ -689,10 +689,10 @@ const CheckoutPage = () => {
             <p className="text-2xl font-extrabold text-gray-900">{fmt(toPay)}</p>
 
             <p className="text-[11px] text-gray-500">
-              Google Pay, PhonePe, Paytm, BHIM ya koi bhi UPI app se scan karein — amount khud bhar jayega.
+              Scan with Google Pay, PhonePe, Paytm, BHIM or any UPI app — the amount is filled in automatically.
             </p>
             <p className="text-[10px] text-green-700">
-              Payment ke baad order place karein — store order verify karke confirm karega.
+              Place the order after paying — the store verifies and confirms it.
             </p>
           </div>
         </div>
