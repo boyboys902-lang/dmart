@@ -5,7 +5,7 @@ import { useProduct, useProducts } from '../context/useProducts';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Truck, ShieldCheck, Lock, BadgeCheck,
-  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone, QrCode, Copy, X,
+  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone, QrCode, X,
 } from 'lucide-react';
 import { createOrder, getUpiSettings, saveCustomer } from '../utils/firestoreApi';
 import { DEFAULT_UPI_SETTINGS, UPI_APPS, buildUpiPaymentLink, getUpiApp } from '../utils/upi';
@@ -80,7 +80,6 @@ const CheckoutPage = () => {
     [upiSettings, toPay, paymentLink, billing.fullName, product?.title]
   );
 
-  const [copied, setCopied] = useState(false);
   const [showQr, setShowQr] = useState(false);
 
   useEffect(() => {
@@ -93,16 +92,6 @@ const CheckoutPage = () => {
       document.body.style.overflow = '';
     };
   }, [showQr]);
-
-  const copyUpiId = async () => {
-    try {
-      await navigator.clipboard.writeText(upiSettings.upiId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      /* clipboard unavailable */
-    }
-  };
 
   const fmt = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
 
@@ -678,22 +667,6 @@ const CheckoutPage = () => {
             </div>
 
             <p className="text-2xl font-extrabold text-gray-900">{fmt(toPay)}</p>
-
-            <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-left">
-              <div className="min-w-0">
-                <p className="text-[10px] text-gray-400">Pay to</p>
-                <p className="text-xs font-semibold text-gray-800">{upiSettings.payeeName}</p>
-                <p className="font-mono text-[11px] text-gray-600 break-all">{upiSettings.upiId}</p>
-              </div>
-              <button
-                type="button"
-                onClick={copyUpiId}
-                className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 bg-white text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
-              >
-                {copied ? <CheckCircle2 size={13} className="text-[#0c831f]" /> : <Copy size={13} />}
-                {copied ? 'Copied' : 'Copy UPI ID'}
-              </button>
-            </div>
 
             <p className="text-[11px] text-gray-500">
               Google Pay, PhonePe, Paytm, BHIM ya koi bhi UPI app se scan karein — amount khud bhar jayega.
