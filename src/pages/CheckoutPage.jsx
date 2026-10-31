@@ -5,7 +5,7 @@ import { useProduct, useProducts } from '../context/useProducts';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Truck, ShieldCheck, Lock, BadgeCheck,
-  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone, QrCode, Copy,
+  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone, QrCode, Copy, X,
 } from 'lucide-react';
 import { createOrder, getUpiSettings, saveCustomer } from '../utils/firestoreApi';
 import { DEFAULT_UPI_SETTINGS, UPI_APPS, buildUpiPaymentLink, getUpiApp } from '../utils/upi';
@@ -81,6 +81,18 @@ const CheckoutPage = () => {
   );
 
   const [copied, setCopied] = useState(false);
+  const [showQr, setShowQr] = useState(false);
+
+  useEffect(() => {
+    if (!showQr) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') setShowQr(false); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [showQr]);
 
   const copyUpiId = async () => {
     try {
@@ -484,40 +496,20 @@ const CheckoutPage = () => {
                         <span className="flex-1 h-px bg-gray-200" />
                       </div>
 
-                      <div className="rounded-2xl border border-green-200 bg-green-50/50 px-4 py-4 space-y-3 text-center">
-                        <div className="flex items-center justify-center gap-2 text-[#0c831f]">
-                          <QrCode size={16} />
-                          <p className="text-sm font-bold">QR scan karke pay karein</p>
+                      <button
+                        type="button"
+                        onClick={() => setShowQr(true)}
+                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-gray-200 hover:border-[#0c831f] hover:bg-green-50/60 transition-all text-left"
+                      >
+                        <span className="w-10 h-10 rounded-lg flex items-center justify-center bg-[#0c831f] text-white shrink-0">
+                          <QrCode size={20} />
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-gray-800">QR se pay karein</p>
+                          <p className="text-[10px] text-gray-400">Koi bhi UPI app se scan karein — tap to open QR</p>
                         </div>
-
-                        <div className="flex justify-center">
-                          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                            <QRCode value={qrValue} size={188} />
-                          </div>
-                        </div>
-
-                        <p className="text-lg font-extrabold text-gray-900">{fmt(toPay)}</p>
-
-                        <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-left">
-                          <div className="min-w-0">
-                            <p className="text-[10px] text-gray-400">Pay to</p>
-                            <p className="text-xs font-semibold text-gray-800">{upiSettings.payeeName}</p>
-                            <p className="font-mono text-[11px] text-gray-600 break-all">{upiSettings.upiId}</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={copyUpiId}
-                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
-                          >
-                            {copied ? <CheckCircle2 size={13} className="text-[#0c831f]" /> : <Copy size={13} />}
-                            {copied ? 'Copied' : 'Copy UPI ID'}
-                          </button>
-                        </div>
-
-                        <p className="text-[10px] text-green-700">
-                          Google Pay, PhonePe, Paytm, BHIM ya koi bhi UPI app se scan karein — amount khud bhar jayega.
-                        </p>
-                      </div>
+                        <ChevronRight size={16} className="text-gray-400 shrink-0" />
+                      </button>
 
                       {submissionError && (
                         <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 flex items-start gap-2 text-xs text-red-700 font-medium">
@@ -651,6 +643,65 @@ const CheckoutPage = () => {
               <p className="text-[10px] text-gray-400 text-center mt-1.5">🔒 UPI only • App se pay • ya QR scan</p>
             </>
           )}
+        </div>
+      )}
+
+      {/* QR modal */}
+      {showQr && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4"
+          onClick={() => setShowQr(false)}
+        >
+          <div
+            className="w-full sm:max-w-sm bg-white rounded-t-3xl sm:rounded-2xl p-5 space-y-3 text-center max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2 text-[#0c831f]">
+                <QrCode size={18} />
+                <p className="text-sm font-bold text-gray-900">QR scan karke pay karein</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQr(false)}
+                aria-label="Close"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 shrink-0"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="flex justify-center pt-1">
+              <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                <QRCode value={qrValue} size={208} />
+              </div>
+            </div>
+
+            <p className="text-2xl font-extrabold text-gray-900">{fmt(toPay)}</p>
+
+            <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-left">
+              <div className="min-w-0">
+                <p className="text-[10px] text-gray-400">Pay to</p>
+                <p className="text-xs font-semibold text-gray-800">{upiSettings.payeeName}</p>
+                <p className="font-mono text-[11px] text-gray-600 break-all">{upiSettings.upiId}</p>
+              </div>
+              <button
+                type="button"
+                onClick={copyUpiId}
+                className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 bg-white text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                {copied ? <CheckCircle2 size={13} className="text-[#0c831f]" /> : <Copy size={13} />}
+                {copied ? 'Copied' : 'Copy UPI ID'}
+              </button>
+            </div>
+
+            <p className="text-[11px] text-gray-500">
+              Google Pay, PhonePe, Paytm, BHIM ya koi bhi UPI app se scan karein — amount khud bhar jayega.
+            </p>
+            <p className="text-[10px] text-green-700">
+              Payment ke baad order place karein — store order verify karke confirm karega.
+            </p>
+          </div>
         </div>
       )}
 
