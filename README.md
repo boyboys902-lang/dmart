@@ -25,7 +25,7 @@ Open http://localhost:5173
 
 Local admin login:
 
-- Access code: `admin123` (saved in `settings/admin`; `VITE_ADMIN_ACCESS_CODE` is the fallback)
+- Access code: `admin123` (saved in `dmart_settings/admin`; `VITE_ADMIN_ACCESS_CODE` is the fallback)
 - Email: `admin@fakuu.local`
 - Password: `admin123`
 
@@ -97,15 +97,19 @@ The catalogue lives in Firestore (`products/{id}`) and is fully managed from
 
 ## Data model
 
-- `products/{productId}` — storefront catalogue, managed from Admin → Products.
-- `orders/{orderId}` — customer orders created at checkout.
-- `customers/{mobileDigits}` — address book saved at checkout (`fullName`, `mobile`,
+All collections are prefixed with `dmart_` so this app never mixes with other
+apps that may share the same Firebase project (`dryfuite` already contains an
+unrelated `products` collection).
+
+- `dmart_products/{productId}` — storefront catalogue, managed from Admin → Products.
+- `dmart_orders/{orderId}` — customer orders created at checkout.
+- `dmart_customers/{mobileDigits}` — address book saved at checkout (`fullName`, `mobile`,
   `cityState`, `pincode`, `fullAddress`, `ordersCount`), listed in Admin → Customers.
-- `carts/{deviceId}` — the cart is mirrored to Firestore for every device (and kept
+- `dmart_carts/{deviceId}` — the cart is mirrored to Firestore for every device (and kept
   in localStorage for instant loading).
-- `settings/metaPixel` — `{ pixels: [{ id, label, enabled }] }`.
-- `settings/upi` — `{ upiId, payeeName }`.
-- `settings/admin` — `{ accessCode }`, used by the admin login screen.
+- `dmart_settings/metaPixel` — `{ pixels: [{ id, label, enabled }] }`.
+- `dmart_settings/upi` — `{ upiId, payeeName }`.
+- `dmart_settings/admin` — `{ accessCode }`, used by the admin login screen.
 
 Security rules live in `firestore.rules`. They are intentionally **open**
 (anyone can read/write) per request; the file also contains a commented

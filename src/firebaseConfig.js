@@ -11,12 +11,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
+  apiKey: "AIzaSyBhhPpDjB4XgstADqjh9bZP8qWu4RrIU0Q",
+  authDomain: "dryfuite.firebaseapp.com",
+  projectId: "dryfuite",
+  storageBucket: "dryfuite.firebasestorage.app",
+  messagingSenderId: "869245340647",
+  appId: "1:869245340647:web:1ea7ce45a9dfaf34c80b42",
 };
 
 // Optional: environment variables still win when they are set, so nothing

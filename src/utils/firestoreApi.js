@@ -16,11 +16,13 @@ import {
 import { db } from "../firebase";
 import { DEFAULT_UPI_SETTINGS } from "./upi";
 
-const ORDERS_COLLECTION = "orders";
-const PRODUCTS_COLLECTION = "products";
-const CUSTOMERS_COLLECTION = "customers";
-const CARTS_COLLECTION = "carts";
-const SETTINGS_COLLECTION = "settings";
+// All collections are prefixed with `dmart_` so this app never mixes with other
+// apps that may share the same Firebase project.
+const ORDERS_COLLECTION = "dmart_orders";
+const PRODUCTS_COLLECTION = "dmart_products";
+const CUSTOMERS_COLLECTION = "dmart_customers";
+const CARTS_COLLECTION = "dmart_carts";
+const SETTINGS_COLLECTION = "dmart_settings";
 const META_PIXEL_DOC = "metaPixel";
 const UPI_SETTINGS_DOC = "upi";
 const ADMIN_SETTINGS_DOC = "admin";
@@ -202,9 +204,19 @@ const serializeProduct = (snapshot) => {
   return { ...data, _id: snapshot.id, id: Number(data.id) };
 };
 
+// A shared Firebase project can hold documents from other apps in a
+// same-named collection, so only documents shaped like our products count.
+const looksLikeProduct = (data) =>
+  typeof data?.title === "string" &&
+  data.title.trim().length > 0 &&
+  (data.offer_price !== undefined || data.original_price !== undefined);
+
 export const getProducts = async () => {
   const snapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-  return sortProducts(snapshot.docs.map(serializeProduct));
+  const products = snapshot.docs
+    .map(serializeProduct)
+    .filter((product) => looksLikeProduct(product));
+  return sortProducts(products);
 };
 
 const productPayload = (product) => {

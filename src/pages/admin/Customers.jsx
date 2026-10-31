@@ -69,7 +69,7 @@ const Customers = () => {
 
           <p className="text-sm text-gray-500 mb-6">
             Har checkout par customer ka naam, mobile aur address Firestore
-            (collection <span className="font-mono text-xs">customers</span>) mein
+            (collection <span className="font-mono text-xs">dmart_customers</span>) mein
             save hota hai.
           </p>
 

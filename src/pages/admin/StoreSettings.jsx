@@ -58,8 +58,8 @@ const StoreSettings = () => {
           </h1>
           <p className="text-sm text-gray-500 mb-6">
             Admin panel ka access code ab Firestore (
-            <span className="font-mono text-xs">settings/admin</span>) mein save hota
-            hai — yahan se kabhi bhi badal sakte hain.
+            <span className="font-mono text-xs">dmart_settings/admin</span>) mein save
+            hota hai — yahan se kabhi bhi badal sakte hain.
           </p>
 
           {error && (
