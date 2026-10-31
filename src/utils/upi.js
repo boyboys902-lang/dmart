@@ -53,18 +53,23 @@ export const buildUpiPaymentLink = ({
   const transactionId = transactionRef || `BH${Date.now()}`;
   const transactionNote = note || "Order payment";
 
-  const params = new URLSearchParams({
-    pa: merchantId,
-    pn: merchantName,
-    am: amountText,
-    cu: "INR",
-    tn: transactionNote,
-    tr: transactionId,
-  });
+  // UPI apps do not decode "+" back to a space (form encoding), so build the
+  // query with encodeURIComponent → spaces become %20 and names stay valid.
+  const enc = (value) => encodeURIComponent(String(value ?? ""));
+
+  const buildQuery = ({ withRef = true } = {}) =>
+    [
+      `pa=${enc(merchantId)}`,
+      `pn=${enc(merchantName)}`,
+      `am=${enc(amountText)}`,
+      `cu=INR`,
+      `tn=${enc(transactionNote)}`,
+      ...(withRef ? [`tr=${enc(transactionId)}`] : []),
+    ].join("&");
 
   switch (app) {
     case "gpay":
-      return `tez://upi/pay?${params.toString()}`;
+      return `tez://upi/pay?${buildQuery()}`;
 
     case "phonepe": {
       // iPhone needs the plain UPI scheme, Android needs PhonePe's native
@@ -74,7 +79,8 @@ export const buildUpiPaymentLink = ({
         /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isIOS) {
-        return `phonepe://upi//pay?${params.toString()}`;
+        // iPhone's PhonePe build rejects the extra `tr` field, so keep it out.
+        return `phonepe://upi//pay?${buildQuery({ withRef: false })}`;
       }
 
       const payload = {
@@ -100,9 +106,9 @@ export const buildUpiPaymentLink = ({
     }
 
     case "paytm":
-      return `paytmmp://cash_wallet?${params.toString()}&featuretype=money_transfer`;
+      return `paytmmp://cash_wallet?${buildQuery()}&featuretype=money_transfer`;
 
     default:
-      return `upi://pay?${params.toString()}`;
+      return `upi://pay?${buildQuery()}`;
   }
 };
