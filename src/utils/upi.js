@@ -15,7 +15,6 @@ export const UPI_APPS = [
   { id: "paytm", name: "Paytm", short: "P", color: "#00baf2", logo: paytmLogo },
   { id: "bhim", name: "BHIM UPI", short: "B", color: "#f1592a", logo: bhimLogo },
   { id: "whatsapp", name: "WhatsApp Pay", short: "W", color: "#25d366", logo: whatsappLogo },
-  { id: "any", name: "Any UPI App", short: "UPI", color: "#16a34a", logo: null },
 ];
 
 export const getUpiApp = (appId) =>

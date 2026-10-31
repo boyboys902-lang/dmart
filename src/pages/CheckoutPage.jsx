@@ -5,10 +5,11 @@ import { useProduct, useProducts } from '../context/useProducts';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   Truck, ShieldCheck, Lock, BadgeCheck,
-  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone,
+  MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone, QrCode, Copy,
 } from 'lucide-react';
 import { createOrder, getUpiSettings, saveCustomer } from '../utils/firestoreApi';
 import { DEFAULT_UPI_SETTINGS, UPI_APPS, buildUpiPaymentLink, getUpiApp } from '../utils/upi';
+import QRCode from 'react-qr-code';
 
 // ── localStorage helpers ──────────────────────────────────────────────────
 
@@ -65,6 +66,31 @@ const CheckoutPage = () => {
   const toPay         = originalPrice;
 
   const selectedApp = useMemo(() => getUpiApp(upiApp), [upiApp]);
+
+  // QR that any UPI app can scan — amount is already filled in.
+  const qrValue = useMemo(
+    () =>
+      buildUpiPaymentLink({
+        upiId: upiSettings.upiId,
+        payeeName: upiSettings.payeeName,
+        amount: toPay,
+        note: `Order ${product?.title || ''} - ${billing.fullName}`.slice(0, 50),
+        transactionRef: paymentLink?.orderId || `QR${Date.now().toString().slice(-8)}`,
+      }),
+    [upiSettings, toPay, paymentLink, billing.fullName, product?.title]
+  );
+
+  const [copied, setCopied] = useState(false);
+
+  const copyUpiId = async () => {
+    try {
+      await navigator.clipboard.writeText(upiSettings.upiId);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
 
   const fmt = (n) => '₹' + Math.round(n).toLocaleString('en-IN');
 
@@ -445,24 +471,52 @@ const CheckoutPage = () => {
                               )}
                               <div className="min-w-0">
                                 <p className={`text-sm font-bold ${selected ? 'text-[#0c831f]' : 'text-gray-800'}`}>{app.name}</p>
-                                <p className="text-[10px] text-gray-400">
-                                  {app.id === 'any' ? 'Choose from installed UPI apps' : 'Pay using UPI intent'}
-                                </p>
+                                <p className="text-[10px] text-gray-400">Pay using UPI intent</p>
                               </div>
                             </label>
                           );
                         })}
                       </div>
 
-                      <div className="bg-gray-50 border border-gray-100 rounded-xl px-3 py-2.5">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-gray-500">Paying to</span>
-                          <span className="font-semibold text-gray-800">{upiSettings.payeeName}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="flex-1 h-px bg-gray-200" />
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">ya phir</span>
+                        <span className="flex-1 h-px bg-gray-200" />
+                      </div>
+
+                      <div className="rounded-2xl border border-green-200 bg-green-50/50 px-4 py-4 space-y-3 text-center">
+                        <div className="flex items-center justify-center gap-2 text-[#0c831f]">
+                          <QrCode size={16} />
+                          <p className="text-sm font-bold">QR scan karke pay karein</p>
                         </div>
-                        <div className="flex justify-between text-xs mt-1">
-                          <span className="text-gray-500">UPI ID</span>
-                          <span className="font-mono text-[11px] text-gray-800 break-all text-right">{upiSettings.upiId}</span>
+
+                        <div className="flex justify-center">
+                          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                            <QRCode value={qrValue} size={188} />
+                          </div>
                         </div>
+
+                        <p className="text-lg font-extrabold text-gray-900">{fmt(toPay)}</p>
+
+                        <div className="bg-white border border-gray-100 rounded-xl px-3 py-2.5 flex items-center justify-between gap-2 text-left">
+                          <div className="min-w-0">
+                            <p className="text-[10px] text-gray-400">Pay to</p>
+                            <p className="text-xs font-semibold text-gray-800">{upiSettings.payeeName}</p>
+                            <p className="font-mono text-[11px] text-gray-600 break-all">{upiSettings.upiId}</p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={copyUpiId}
+                            className="shrink-0 flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-200 text-[11px] font-semibold text-gray-700 hover:bg-gray-50"
+                          >
+                            {copied ? <CheckCircle2 size={13} className="text-[#0c831f]" /> : <Copy size={13} />}
+                            {copied ? 'Copied' : 'Copy UPI ID'}
+                          </button>
+                        </div>
+
+                        <p className="text-[10px] text-green-700">
+                          Google Pay, PhonePe, Paytm, BHIM ya koi bhi UPI app se scan karein — amount khud bhar jayega.
+                        </p>
                       </div>
 
                       {submissionError && (
@@ -594,7 +648,7 @@ const CheckoutPage = () => {
                 </div>
                 <div className="flex items-center gap-1">{selectedApp.name} <ChevronRight size={16} /></div>
               </button>
-              <p className="text-[10px] text-gray-400 text-center mt-1.5">🔒 UPI only • GPay • PhonePe • Paytm • BHIM</p>
+              <p className="text-[10px] text-gray-400 text-center mt-1.5">🔒 UPI only • App se pay • ya QR scan</p>
             </>
           )}
         </div>
