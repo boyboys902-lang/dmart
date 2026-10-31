@@ -282,7 +282,7 @@ const CheckoutPage = () => {
         transactionRef: newOrder.id,
       });
 
-      setPaymentLink({ url, appName: selectedApp.name });
+      setPaymentLink({ url, appName: selectedApp.name, orderId: newOrder.id });
 
       // One-tap experience on phones. If the app does not open (or the
       // browser blocks the custom scheme), the payment button stays visible
@@ -296,6 +296,26 @@ const CheckoutPage = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // The customer can still switch the app after the order is placed — the
+  // payment link is rebuilt for the newly selected app.
+  const selectUpiApp = (appId) => {
+    setUpiApp(appId);
+
+    if (!paymentLink?.orderId) return;
+
+    const target = appId === 'paytm' ? 'paytm' : 'phonepe';
+    const url = buildUpiPaymentLink({
+      app: target,
+      upiId: upiSettings.upiId,
+      payeeName: upiSettings.payeeName,
+      amount: toPay,
+      note: `Order ${paymentLink.orderId}`,
+      transactionRef: paymentLink.orderId,
+    });
+
+    setPaymentLink({ url, appName: getUpiApp(appId).name, orderId: paymentLink.orderId });
   };
 
   if (!product) return (
@@ -446,17 +466,16 @@ const CheckoutPage = () => {
                           return (
                             <label
                               key={app.id}
-                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all ${
-                                paymentLink ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
-                              } ${selected ? 'border-[#0c831f] bg-green-50' : 'border-gray-200'}`}
+                              className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-all cursor-pointer ${
+                                selected ? 'border-[#0c831f] bg-green-50' : 'border-gray-200'
+                              }`}
                             >
                               <input
                                 type="radio"
                                 name="upiApp"
                                 value={app.id}
                                 checked={selected}
-                                disabled={Boolean(paymentLink)}
-                                onChange={() => setUpiApp(app.id)}
+                                onChange={() => selectUpiApp(app.id)}
                                 className="sr-only"
                               />
                               <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? 'border-[#0c831f]' : 'border-gray-300'}`}>
