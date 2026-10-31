@@ -2,48 +2,38 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() {
-      return request.auth != null;
+    // ───────────────────────────────────────────────────────────────────────
+    // Simple / open rules (requested): any visitor can read and write
+    // products, orders, customers, carts and settings without signing in.
+    //
+    // ⚠️  This means anyone who knows the project ID can also delete or edit
+    // your data. If you later want it locked down, replace the block below
+    // with the login-only version at the bottom of this file.
+    // ───────────────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if true;
     }
 
-    function validOrder() {
-      let data = request.resource.data;
-      return data.keys().hasAll([
-        'fullName', 'mobile', 'cityState', 'pincode', 'fullAddress',
-        'productName', 'quantity', 'totalAmount', 'paymentMethod', 'status'
-      ])
-        && data.fullName is string && data.fullName.size() > 0
-        && data.mobile is string && data.mobile.size() > 0
-        && data.cityState is string && data.cityState.size() > 0
-        && data.pincode is string && data.pincode.matches('^[0-9]{6}$')
-        && data.fullAddress is string && data.fullAddress.size() > 0
-        && data.productName is string && data.productName.size() > 0
-        && data.quantity is number && data.quantity >= 1 && data.quantity <= 5
-        && data.totalAmount is number && data.totalAmount >= 0
-        && data.status == 'Pending'
-        && data.paymentMethod == 'UPI'
-        && data.upiApp is string && data.upiApp.size() > 0
-        && data.upiId is string && data.upiId.size() > 0;
-    }
-
-    // Customers can create orders. Only an authenticated admin can read,
-    // update or delete them.
-    match /orders/{orderId} {
-      allow create: if validOrder();
-      allow read, update, delete: if signedIn();
-    }
-
-    // The Meta Pixel code is publicly readable (needed by visitors),
-    // but only the admin can save it.
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if signedIn();
-    }
-
-    // Products are public (storefront), managed only from the admin panel.
-    match /products/{productId} {
-      allow read: if true;
-      allow write: if signedIn();
-    }
+    // ── Login-only version (swap in when you want it secure) ───────────────
+    // function signedIn() { return request.auth != null; }
+    //
+    // match /orders/{orderId} {
+    //   allow create: if true;
+    //   allow read, update, delete: if signedIn();
+    // }
+    // match /products/{productId} {
+    //   allow read: if true;
+    //   allow write: if signedIn();
+    // }
+    // match /settings/{docId} {
+    //   allow read: if true;
+    //   allow write: if signedIn();
+    // }
+    // match /customers/{customerId} {
+    //   allow read, write: if signedIn();
+    // }
+    // match /carts/{deviceId} {
+    //   allow read, write: if true;
+    // }
   }
 }

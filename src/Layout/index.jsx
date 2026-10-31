@@ -16,6 +16,8 @@ import ScrollToTop from "../components/global/ScrollToTop";
 import DynamicMetaPixel from "../components/DynamicMetaPixel";
 import ProductsProvider from "../context/ProductsProvider";
 import ProductManagement from "../pages/admin/ProductManagement";
+import Customers from "../pages/admin/Customers";
+import StoreSettings from "../pages/admin/StoreSettings";
 import { Link } from "react-router-dom";
 
 const NotFound = () => (
@@ -48,6 +50,8 @@ const Layout = () => {
           <Route path="/products" element={<ProtectedRoute><ProductManagement /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute><OrderManagement /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute><ViewOrder /></ProtectedRoute>} />
+          <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
+          <Route path="/store-settings" element={<ProtectedRoute><StoreSettings /></ProtectedRoute>} />
           <Route path="/meta-pixel" element={<ProtectedRoute><MetaPixel /></ProtectedRoute>} />
           <Route path="/upi-settings" element={<ProtectedRoute><UpiSettings /></ProtectedRoute>} />
           <Route path="/user-settings" element={<ProtectedRoute><UserSettings /></ProtectedRoute>} />

@@ -7,10 +7,10 @@ const MissingConfigScreen = () => (
         Firebase configuration missing
       </h1>
       <p className="text-sm text-gray-600 mb-4">
-        This deployment was built without the Firebase environment variables, so
-        sign-in, products and orders cannot load. Add the variables below in your
-        hosting dashboard and redeploy (environment variables are applied only to
-        new builds).
+        The build has no Firebase project configured, so sign-in, products and
+        orders cannot load. Paste your Firebase web app config into{" "}
+        <code className="font-mono text-xs">src/firebaseConfig.js</code> (or set the
+        VITE_FIREBASE_* environment variables) and rebuild/redeploy.
       </p>
 
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
@@ -27,18 +27,18 @@ const MissingConfigScreen = () => (
       </ul>
 
       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-        Where to add them
+        Where to get them
       </p>
       <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1 mb-5">
-        <li>Vercel → your project → Settings → Environment Variables</li>
+        <li>Firebase Console → Project settings (⚙) → Your apps → Web app</li>
         <li>
-          Copy the web app config from Firebase Console → Project settings → Your
-          apps
+          Copy the <code className="font-mono text-xs">firebaseConfig</code> values
         </li>
         <li>
-          Set <code className="font-mono text-xs">VITE_USE_FIREBASE_EMULATOR=false</code>
+          Paste them into <code className="font-mono text-xs">src/firebaseConfig.js</code>{" "}
+          (or Vercel → Settings → Environment Variables)
         </li>
-        <li>Deployments → Redeploy (a new build is required)</li>
+        <li>Rebuild / Redeploy (env changes only apply to new builds)</li>
       </ol>
 
       <details className="text-sm text-gray-600">

@@ -1,4 +1,22 @@
+import { getCartDoc, saveCartDoc } from "./firestoreApi";
+
 const CART_KEY = "basket_cart";
+const DEVICE_KEY = "basket_device_id";
+
+export const getDeviceId = () => {
+  try {
+    let id = localStorage.getItem(DEVICE_KEY);
+    if (!id) {
+      id =
+        (typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID()) ||
+        `dev-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(DEVICE_KEY, id);
+    }
+    return id;
+  } catch {
+    return "unknown-device";
+  }
+};
 
 export const getCart = () => {
   try {
@@ -6,6 +24,22 @@ export const getCart = () => {
   } catch {
     return [];
   }
+};
+
+// Writes the cart to localStorage (instant) and mirrors it to Firestore
+// collection `carts/{deviceId}` in the background.
+const persist = (cart) => {
+  try {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  } catch {
+    /* storage full / private mode */
+  }
+
+  saveCartDoc(getDeviceId(), cart).catch((err) => {
+    console.warn("Cart could not be saved to Firestore:", err);
+  });
+
+  return cart;
 };
 
 export const addToCart = (product, qty = 1) => {
@@ -24,14 +58,12 @@ export const addToCart = (product, qty = 1) => {
       qty,
     });
   }
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  return cart;
+  return persist(cart);
 };
 
 export const removeFromCart = (productId) => {
   const cart = getCart().filter((item) => item.id !== productId);
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  return cart;
+  return persist(cart);
 };
 
 export const updateCartQty = (productId, qty) => {
@@ -39,8 +71,7 @@ export const updateCartQty = (productId, qty) => {
   const cart = getCart().map((item) =>
     item.id === productId ? { ...item, qty } : item
   );
-  localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  return cart;
+  return persist(cart);
 };
 
 export const getCartCount = () => {
@@ -54,7 +85,21 @@ export const getCartTotal = () => {
   }, 0);
 };
 
-export const clearCart = () => {
-  localStorage.removeItem(CART_KEY);
-  return [];
+export const clearCart = () => persist([]);
+
+// Called once on app start: restores a cart saved in Firestore on this device
+// (or pushes the local cart up if Firestore has nothing yet).
+export const syncCartWithFirestore = async () => {
+  try {
+    const local = getCart();
+    const remote = await getCartDoc(getDeviceId());
+
+    if (Array.isArray(remote) && remote.length > 0 && local.length === 0) {
+      localStorage.setItem(CART_KEY, JSON.stringify(remote));
+    } else if (local.length > 0) {
+      await saveCartDoc(getDeviceId(), local);
+    }
+  } catch (err) {
+    console.warn("Cart sync with Firestore failed:", err);
+  }
 };

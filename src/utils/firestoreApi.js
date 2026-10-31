@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  increment,
   orderBy,
   query,
   serverTimestamp,
@@ -17,9 +18,12 @@ import { DEFAULT_UPI_SETTINGS } from "./upi";
 
 const ORDERS_COLLECTION = "orders";
 const PRODUCTS_COLLECTION = "products";
+const CUSTOMERS_COLLECTION = "customers";
+const CARTS_COLLECTION = "carts";
 const SETTINGS_COLLECTION = "settings";
 const META_PIXEL_DOC = "metaPixel";
 const UPI_SETTINGS_DOC = "upi";
+const ADMIN_SETTINGS_DOC = "admin";
 
 export const ORDER_STATUSES = ["Pending", "Completed", "Cancelled"];
 
@@ -270,4 +274,88 @@ export const importProducts = async (products) => {
 
   await batch.commit();
   return { imported: list.length };
+};
+
+// ── Admin settings (access code) ──────────────────────────────────────────
+
+// The admin access code is stored in Firestore so it can be changed from the
+// admin panel. VITE_ADMIN_ACCESS_CODE is only used as a fallback.
+export const getAdminAccessCode = async () => {
+  const snapshot = await getDoc(doc(db, SETTINGS_COLLECTION, ADMIN_SETTINGS_DOC));
+  if (!snapshot.exists()) return "";
+  return String(snapshot.data().accessCode || "");
+};
+
+export const saveAdminAccessCode = async (accessCode) => {
+  const code = String(accessCode || "").trim();
+  await setDoc(
+    doc(db, SETTINGS_COLLECTION, ADMIN_SETTINGS_DOC),
+    { accessCode: code, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+  return code;
+};
+
+// ── Customers (address book) ──────────────────────────────────────────────
+
+const customerId = (mobile) => String(mobile || "").replace(/\D/g, "");
+
+export const saveCustomer = async (customer) => {
+  const id = customerId(customer.mobile);
+  if (!id) return null;
+
+  await setDoc(
+    doc(db, CUSTOMERS_COLLECTION, id),
+    {
+      id,
+      fullName: (customer.fullName || "").trim(),
+      mobile: customer.mobile || "",
+      cityState: customer.cityState || "",
+      pincode: customer.pincode || "",
+      fullAddress: customer.fullAddress || "",
+      ordersCount: increment(1),
+      lastOrderAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return id;
+};
+
+export const getCustomers = async () => {
+  const snapshot = await getDocs(collection(db, CUSTOMERS_COLLECTION));
+  return snapshot.docs
+    .map((item) => ({ ...item.data(), _id: item.id }))
+    .sort((a, b) => {
+      const timeA = a.lastOrderAt?.toMillis?.() || a.updatedAt?.toMillis?.() || 0;
+      const timeB = b.lastOrderAt?.toMillis?.() || b.updatedAt?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
+};
+
+export const getCustomer = async (mobile) => {
+  const id = customerId(mobile);
+  if (!id) return null;
+  const snapshot = await getDoc(doc(db, CUSTOMERS_COLLECTION, id));
+  return snapshot.exists() ? { ...snapshot.data(), _id: snapshot.id } : null;
+};
+
+// ── Cart (mirrored to Firestore per device) ───────────────────────────────
+
+export const getCartDoc = async (deviceId) => {
+  if (!deviceId) return [];
+  const snapshot = await getDoc(doc(db, CARTS_COLLECTION, deviceId));
+  if (!snapshot.exists()) return [];
+  const items = snapshot.data().items;
+  return Array.isArray(items) ? items : [];
+};
+
+export const saveCartDoc = async (deviceId, items) => {
+  if (!deviceId) return;
+  await setDoc(
+    doc(db, CARTS_COLLECTION, deviceId),
+    { items: items || [], itemCount: (items || []).length, updatedAt: serverTimestamp() },
+    { merge: true }
+  );
 };

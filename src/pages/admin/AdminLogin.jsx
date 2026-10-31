@@ -1,22 +1,49 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
+import { getAdminAccessCode } from "../../utils/firestoreApi";
 
-const ACCESS_PASSWORD = import.meta.env.VITE_ADMIN_ACCESS_CODE || "";
+// Fallback when Firestore has no code saved yet.
+const ENV_ACCESS_CODE = import.meta.env.VITE_ADMIN_ACCESS_CODE || "";
 
 const AdminLogin = () => {
   const [accessCode, setAccessCode] = useState("");
-  const [accessGranted, setAccessGranted] = useState(!ACCESS_PASSWORD);
+  const [requiredCode, setRequiredCode] = useState(null);
+  const [accessGranted, setAccessGranted] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [codeError, setCodeError] = useState("");
   const navigate = useNavigate();
 
+  // The access code lives in Firestore (settings/admin) and can be changed from
+  // the admin panel. If nothing is saved yet, the env value (if any) is used.
+  useEffect(() => {
+    let active = true;
+
+    getAdminAccessCode()
+      .then((code) => {
+        const effective = (code || ENV_ACCESS_CODE).trim();
+        if (!active) return;
+        setRequiredCode(effective);
+        setAccessGranted(!effective);
+      })
+      .catch((err) => {
+        console.warn("Could not load admin access code:", err);
+        if (!active) return;
+        setRequiredCode(ENV_ACCESS_CODE.trim());
+        setAccessGranted(!ENV_ACCESS_CODE.trim());
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const handleCodeSubmit = (e) => {
     e.preventDefault();
-    if (accessCode === ACCESS_PASSWORD) {
+    if (accessCode.trim() === requiredCode) {
       setAccessGranted(true);
       setCodeError("");
     } else {
@@ -42,6 +69,14 @@ const AdminLogin = () => {
       setError(messages[err.code] || "Invalid email or password");
     }
   };
+
+  if (requiredCode === null) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+        <p className="text-gray-500 font-medium">Loading…</p>
+      </div>
+    );
+  }
 
   if (!accessGranted) {
     return (

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, LogOut, Settings, Code, IndianRupee, Package } from "lucide-react";
+import { Menu, X, ShoppingCart, LogOut, Settings, Code, IndianRupee, Package, Users, KeyRound } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebase";
 
@@ -18,8 +18,10 @@ const AdminSidebar = () => {
   const navItems = [
     { to: "/products", icon: Package, label: "Products" },
     { to: "/orders", icon: ShoppingCart, label: "Orders" },
+    { to: "/customers", icon: Users, label: "Customers" },
     { to: "/upi-settings", icon: IndianRupee, label: "UPI Settings" },
     { to: "/meta-pixel", icon: Code, label: "Meta Pixel" },
+    { to: "/store-settings", icon: KeyRound, label: "Store Settings" },
     { to: "/user-settings", icon: Settings, label: "User Settings" },
   ];
 

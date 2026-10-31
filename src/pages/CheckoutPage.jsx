@@ -7,12 +7,13 @@ import {
   Truck, ShieldCheck, Lock, BadgeCheck,
   MapPin, Clock, ChevronRight, CheckCircle2, ArrowLeft, AlertCircle, Smartphone,
 } from 'lucide-react';
-import { createOrder, getUpiSettings } from '../utils/firestoreApi';
+import { createOrder, getUpiSettings, saveCustomer } from '../utils/firestoreApi';
 import { DEFAULT_UPI_SETTINGS, UPI_APPS, buildUpiPaymentLink, getUpiApp } from '../utils/upi';
 
 // ── localStorage helpers ──────────────────────────────────────────────────
 
 const ORDERS_KEY = 'basket_orders';
+const CUSTOMER_KEY = 'basket_last_customer';
 
 export const saveOrderToLocalStorage = (order) => {
   try {
@@ -84,6 +85,18 @@ const CheckoutPage = () => {
     return () => {
       active = false;
     };
+  }, []);
+
+  // Prefill the address from this device's last order (saved in Firestore too).
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CUSTOMER_KEY) || 'null');
+      if (saved && saved.mobile) {
+        setBilling((prev) => ({ ...prev, ...saved }));
+      }
+    } catch {
+      /* ignore malformed data */
+    }
   }, []);
 
   // ── Validators ────────────────────────────────────────────────────────────
@@ -176,6 +189,22 @@ const CheckoutPage = () => {
 
     try {
       await createOrder(payload);
+
+      // Save the customer in Firestore (address book) and remember the address
+      // on this device. Failures must never block checkout.
+      saveCustomer({
+        fullName: billing.fullName,
+        mobile: `+91${billing.mobile}`,
+        cityState: `${billing.city}, ${billing.state}`,
+        pincode: billing.pincode,
+        fullAddress: billing.fullAddress,
+      }).catch((err) => console.warn('Customer save failed:', err));
+
+      try {
+        localStorage.setItem(CUSTOMER_KEY, JSON.stringify(billing));
+      } catch {
+        /* ignore */
+      }
 
       const newOrder = {
         id: generateOrderId(),

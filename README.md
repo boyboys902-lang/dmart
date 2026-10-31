@@ -25,7 +25,7 @@ Open http://localhost:5173
 
 Local admin login:
 
-- Access code: `admin123` (from `VITE_ADMIN_ACCESS_CODE`)
+- Access code: `admin123` (saved in `settings/admin`; `VITE_ADMIN_ACCESS_CODE` is the fallback)
 - Email: `admin@fakuu.local`
 - Password: `admin123`
 
@@ -39,18 +39,21 @@ Emulator data is in memory, so after restarting `npm run emulators` run
 1. Create a Firebase project and a Web app in the Firebase Console.
 2. Enable **Authentication → Sign-in method → Email/Password**.
 3. Add an admin user under **Authentication → Users**.
-4. Copy the web app config into `.env`:
+4. Paste the web app config into **`src/firebaseConfig.js`** (recommended — it is
+   committed, so the deployed site works without dashboard settings):
 
-```env
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-VITE_USE_FIREBASE_EMULATOR=false
-VITE_ADMIN_ACCESS_CODE=your-access-code
+```js
+export const FIREBASE_CONFIG = {
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project",
+  storageBucket: "your-project.firebasestorage.app",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef",
+};
 ```
+
+   (Or use `.env` with the `VITE_FIREBASE_*` variables — env values win.)
 
 5. Deploy Firestore rules:
 
@@ -62,22 +65,22 @@ Or paste `firestore.rules` into **Firestore → Rules** in the console.
 
 ### Deploying (Vercel / Netlify)
 
-Build-time variables must be added in the hosting dashboard — `.env` is
-gitignored, so a deployment without them shows a “Firebase configuration
+The config now ships in `src/firebaseConfig.js`, so no dashboard variables are
+needed. If the file is left empty the build shows a “Firebase configuration
 missing” screen instead of crashing with `auth/invalid-api-key`.
 
-Vercel: **Settings → Environment Variables** → add every `VITE_*` variable
-above → **Deployments → Redeploy** (env changes only apply to new builds).
-Also add the deployed domain to **Firebase → Authentication → Settings →
-Authorized domains**, otherwise admin sign-in is rejected.
+Add the deployed domain to **Firebase → Authentication → Settings → Authorized
+domains**, otherwise admin sign-in is rejected.
 
 ## Admin routes
 
-- Login: `/chutya/nikal/dmart`
+- Login: `/chutya/nikal/dmart` (access code is stored in Firestore, editable from Store Settings)
 - Products: `/products`
 - Orders: `/orders`
+- Customers: `/customers`
 - UPI settings: `/upi-settings`
 - Meta Pixel: `/meta-pixel`
+- Store settings (access code): `/store-settings`
 - User settings: `/user-settings`
 
 ## Products
@@ -94,9 +97,16 @@ The catalogue lives in Firestore (`products/{id}`) and is fully managed from
 
 ## Data model
 
-- `products/{productId}` — storefront catalogue, publicly readable, admin writable.
-- `orders/{orderId}` — customer order documents created by visitors.
-- `settings/metaPixel` — `{ pixels: [{ id, label, enabled }] }`, publicly readable, admin writable.
-- `settings/upi` — `{ upiId, payeeName }`, publicly readable, admin writable.
+- `products/{productId}` — storefront catalogue, managed from Admin → Products.
+- `orders/{orderId}` — customer orders created at checkout.
+- `customers/{mobileDigits}` — address book saved at checkout (`fullName`, `mobile`,
+  `cityState`, `pincode`, `fullAddress`, `ordersCount`), listed in Admin → Customers.
+- `carts/{deviceId}` — the cart is mirrored to Firestore for every device (and kept
+  in localStorage for instant loading).
+- `settings/metaPixel` — `{ pixels: [{ id, label, enabled }] }`.
+- `settings/upi` — `{ upiId, payeeName }`.
+- `settings/admin` — `{ accessCode }`, used by the admin login screen.
 
-Security rules live in `firestore.rules`.
+Security rules live in `firestore.rules`. They are intentionally **open**
+(anyone can read/write) per request; the file also contains a commented
+login-only version you can switch back to.
