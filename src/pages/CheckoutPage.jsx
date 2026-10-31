@@ -505,12 +505,6 @@ const CheckoutPage = () => {
                         })}
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <span className="flex-1 h-px bg-gray-200" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">ya phir</span>
-                        <span className="flex-1 h-px bg-gray-200" />
-                      </div>
-
                       <button
                         type="button"
                         onClick={() => setShowQr(true)}
