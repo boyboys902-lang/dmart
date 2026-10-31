@@ -67,20 +67,30 @@ export const buildUpiPaymentLink = ({
       return `tez://upi/pay?${params.toString()}`;
 
     case "phonepe": {
+      // iPhone needs the plain UPI scheme, Android needs PhonePe's native
+      // payload with a VPA contact — this combination works on both.
+      const isIOS =
+        typeof navigator !== "undefined" &&
+        /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isIOS) {
+        return `phonepe://upi//pay?${params.toString()}`;
+      }
+
       const payload = {
-        p2pPaymentCheckoutParams: {
-          checkoutType: "COLLECT",
-          initialAmount: Math.round(amountValue * 100),
-          note: {
-            type: "text",
-            message: transactionNote,
-          },
-          supportedInstruments: -1,
-        },
         contact: {
-          type: "EXTERNAL_MERCHANT",
-          name: merchantName,
+          cbcName: "",
+          nickName: "",
           vpa: merchantId,
+          type: "VPA",
+        },
+        p2pPaymentCheckoutParams: {
+          note: transactionNote,
+          isByDefaultKnownContact: true,
+          initialAmount: Math.round(amountValue * 100),
+          currency: "INR",
+          checkoutType: "DEFAULT",
+          transactionContext: "p2p",
         },
       };
 
