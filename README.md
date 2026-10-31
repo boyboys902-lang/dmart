@@ -72,20 +72,6 @@ missing” screen instead of crashing with `auth/invalid-api-key`.
 Add the deployed domain to **Firebase → Authentication → Settings → Authorized
 domains**, otherwise admin sign-in is rejected.
 
-## Payments (UPI QR)
-
-Checkout is UPI-only and uses a **QR code** instead of app deep links:
-
-1. Customer fills the address and taps **Place order**.
-2. The order is saved in Firestore and a `upi://pay?...` QR is shown (amount and
-   payee are already filled in), so any UPI app — Google Pay, PhonePe, Paytm,
-   BHIM — can scan it.
-3. The store confirms the payment from **Admin → Orders**.
-
-The QR is built from the merchant UPI ID in `dmart_settings/upi` (editable in
-**Admin → UPI Settings**), so it works on Android and iPhone without any app
-detection.
-
 ## Admin routes
 
 - Login: `/chutya/nikal/dmart` (access code is stored in Firestore, editable from Store Settings)

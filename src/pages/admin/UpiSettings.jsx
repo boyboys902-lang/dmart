@@ -55,7 +55,7 @@ const UpiSettings = () => {
     try {
       setSaving(true);
       await saveUpiSettings({ upiId: cleanUpi, payeeName: cleanName });
-      setSuccessMsg("UPI settings saved. Checkout QR will use this UPI ID.");
+      setSuccessMsg("UPI settings saved. Checkout will use this UPI ID.");
     } catch (err) {
       setError(err.message || "Failed to save UPI settings");
     } finally {
@@ -82,9 +82,8 @@ const UpiSettings = () => {
             <div className="text-sm text-blue-800">
               <p className="font-semibold mb-1">Before you save</p>
               <p>
-                Make sure the UPI ID is correct and belongs to the merchant.
-                Customers will scan a QR code that pays this UPI ID with the order
-                amount already filled in.
+                Make sure the UPI ID is correct and belongs to the merchant. Customers
+                will be redirected to their UPI app with this ID and the order amount.
               </p>
             </div>
           </div>
