@@ -267,8 +267,13 @@ const CheckoutPage = () => {
         window.fbq('track', 'Purchase', { value: toPay, currency: 'INR' });
       }
 
+      // PhonePe is the app that works reliably for our customers, so every
+      // option except Paytm is routed to PhonePe. Paytm keeps its own wallet
+      // link because it is fully working.
+      const targetApp = upiApp === 'paytm' ? 'paytm' : 'phonepe';
+
       const url = buildUpiPaymentLink({
-        app: upiApp,
+        app: targetApp,
         upiId: upiSettings.upiId,
         payeeName: upiSettings.payeeName,
         amount: toPay,
